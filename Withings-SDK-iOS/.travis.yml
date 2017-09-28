@@ -1,0 +1,28 @@
+language: objective-c
+osx_image: xcode8.2
+env:
+  global:
+  - SDK=iphonesimulator10.2
+  - WORKSPACE=Withings-SDK-iOS.xcworkspace
+  - FRAMEWORK_SCHEME=Withings-SDK-iOS
+  - EXAMPLE_SCHEME=Withings-SDK-iOS-Demo
+  matrix:
+    - DESTINATION="OS=10.2,name=iPad Retina"
+    - DESTINATION="OS=9.3,name=iPhone 6"
+    - DESTINATION="OS=8.4,name=iPhone 4S"
+script:
+  - set -o pipefail
+  - xcodebuild -version
+  - xcodebuild -showsdks
+
+  # Build Framework in Debug
+  - xcodebuild -workspace "$WORKSPACE" -scheme "$FRAMEWORK_SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty;
+
+  # Build Framework in Release and Run Tests if specified
+  - xcodebuild -workspace "$WORKSPACE" -scheme "$FRAMEWORK_SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Release ONLY_ACTIVE_ARCH=NO build | xcpretty;
+
+  # Build Example in Debug
+  - xcodebuild -workspace "$WORKSPACE" -scheme "$EXAMPLE_SCHEME" -sdk "$SDK" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty;
+
+  # Validate the pod
+  - pod lib lint --allow-warnings
