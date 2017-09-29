@@ -1,0 +1,135 @@
+jobs:
+  install:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          keys: dependencies
+      - run:
+          name: Install dependencies
+          command: apt-get install build-essential && npm install -g node-gyp && yarn
+      - save_cache:
+          key: dependencies
+          paths:
+            - "~/.npm"
+            - "node_modules"
+
+  docs:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          keys: dependencies
+      - run:
+          name: Generate documentation
+          command: yarn doc
+      - store_artifacts:
+          path: docs
+          destination: documentation
+
+  test:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies
+      - run:
+          name: Run Lint
+          command: yarn lint
+      - run:
+          name: Run tests
+          command: yarn test
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+      - save_cache:
+          key: coverage-{{ checksum "coverage/lcov.info" }}
+          paths: coverage
+
+  codacy:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies
+      - restore_cache:
+          key: coverage
+      - run:
+          name: Install coverage
+          command: npm install -g codacy-coverage
+      - run:
+          name: Update coverage
+          command: cat ./coverage/lcov.info | codacy-coverage
+
+  build:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          keys: dependencies
+      - run:
+          name: Run build
+          command: yarn build
+      - save_cache:
+          key: build-{{ .Branch }}-{{ .BuildNum }}
+          paths: dist
+
+  publish:
+    docker:
+      - image: circleci/node:6.10.3
+        user: root
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies
+      - restore_cache:
+          key: build
+      - run:
+          name: Configure npm registry
+          command: echo -e "registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run:
+          name: Push npm module
+          command: npm publish
+
+workflows:
+  version: 2
+  full_workflow:
+    jobs:
+      - install
+      - docs:
+          requires:
+            - install
+      - test:
+          requires:
+            - install
+      - codacy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
