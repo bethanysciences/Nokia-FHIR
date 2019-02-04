@@ -2,7 +2,7 @@
 Version 0.0.1
 20170921
 
-##Introduction
+## Introduction
 The FHIRBlocks Project is developing a first-generation self-sovereign identity and hyper-granular authorization services allowing mHealth applications and healthcare providers to govern and transact electronic health records (EHR) with absolute security.
 
 FHIRBlocks defines a protocol, Supplemental Methods of Open Access Control (SMOAC), overlaying Hyperledger blockchain-based self-sovereign identity and authorization management capabilities enhancing HL7's Fast Health Interoperability Resource (FHIR) EHR standards transactions without modification.
@@ -28,7 +28,7 @@ EHR transaction authorization and exchange uses two services:
 The use cases outlined below illustrate prototypical and representative FHIRBlocks transactions.
 
 ## Case 1 Digiceutical Weight Watching
-###Introduction
+### Introduction
 Close post-operative vital sign management speeds recovery and lessens complications often leading to patient re-admission. This use case is the prescription of an off the shelf IoT connected scale to monitor patient weight on a daily basis or as required in the treatment protocol.
 
 This case illustrates FHIRBlocks benefits integrating multiple systems without modification and adding absolute security and hyper-granular patient / provider EHR governance.  
